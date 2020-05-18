@@ -110,6 +110,9 @@ abstract class TableQuerier implements Comparable<TableQuerier> {
   public abstract SourceRecord extractRecord() throws SQLException;
 
   public void reset(long now) {
+    if( stmt != null ) {
+      dialect.beforePreparedStatementReset(stmt);
+    }
     closeResultSetQuietly();
     closeStatementQuietly();
     releaseLocksQuietly();
@@ -152,12 +155,16 @@ abstract class TableQuerier implements Comparable<TableQuerier> {
     resultSet = null;
   }
 
+    protected String optimizeQuery(String query) {
+        return dialect.optimizeSelectQuery(query);
+    }
+
   protected void addSuffixIfPresent(ExpressionBuilder builder) {
     if (!this.suffix.isEmpty()) {
       builder.append(" ").append(suffix);
-    }  
+    }
   }
-  
+
   protected void recordQuery(String query) {
     if (query != null && !query.equals(loggedQueryString)) {
       // For usability, log the statement at INFO level only when it changes

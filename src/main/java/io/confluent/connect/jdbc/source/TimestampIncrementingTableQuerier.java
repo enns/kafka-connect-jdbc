@@ -138,8 +138,9 @@ public class TimestampIncrementingTableQuerier extends TableQuerier implements C
     criteria.whereClause(builder);
 
     addSuffixIfPresent(builder);
-    
-    String queryString = builder.toString();
+
+    String queryString = optimizeQuery(builder.toString());
+    System.out.println(queryString);
     recordQuery(queryString);
     log.debug("{} prepared SQL query: {}", this, queryString);
     stmt = dialect.createPreparedStatement(db, queryString);
