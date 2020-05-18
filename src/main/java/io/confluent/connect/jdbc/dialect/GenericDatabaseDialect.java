@@ -1776,4 +1776,14 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   public String toString() {
     return name();
   }
+
+  @Override
+  public String optimizeSelectQuery(String selectQuery) {
+    return selectQuery;
+  }
+
+  @Override
+  public void beforePreparedStatementReset(PreparedStatement stmt) {
+    // do nothing by default
+  }
 }

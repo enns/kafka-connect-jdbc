@@ -39,6 +39,14 @@ public class Db2DatabaseDialectTest extends BaseDialectTest<Db2DatabaseDialect> 
   }
 
   @Test
+  public void testOptimizeSelectQuery() {
+    Db2DatabaseDialect dialect = createDialect();
+    String query = "select * from testtable";
+    String optimizedQuery = dialect.optimizeSelectQuery(query);
+    assertEquals(query + " FOR FETCH ONLY",optimizedQuery);
+  }
+
+  @Test
   public void shouldMapPrimitiveSchemaTypeToSqlTypes() {
     assertPrimitiveMapping(Type.INT8, "SMALLINT");
     assertPrimitiveMapping(Type.INT16, "SMALLINT");

@@ -482,4 +482,19 @@ public interface DatabaseDialect extends ConnectionProvider {
      */
     Object convert(ResultSet resultSet) throws SQLException, IOException;
   }
+
+  /**
+   * Performs dialect specific query processing or extension
+   *
+   * @param selectQuery the query to process
+   * @return processed query
+   */
+  String optimizeSelectQuery(String selectQuery );
+
+  /**
+   * Will be invoked before prepared statement is being reseted
+   *
+   * @param stmt statement being resetted
+   */
+  void beforePreparedStatementReset(PreparedStatement stmt);
 }

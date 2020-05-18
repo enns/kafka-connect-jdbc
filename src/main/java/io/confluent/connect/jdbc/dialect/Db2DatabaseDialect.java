@@ -31,6 +31,12 @@ import io.confluent.connect.jdbc.util.ExpressionBuilder.Transform;
 import io.confluent.connect.jdbc.util.IdentifierRules;
 import io.confluent.connect.jdbc.util.TableId;
 
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Collection;
+
 /**
  * A {@link DatabaseDialect} for IBM DB2.
  */
@@ -166,5 +172,27 @@ public class Db2DatabaseDialect extends GenericDatabaseDialect {
     // DB2 has semicolon delimited property name-value pairs
     return super.sanitizedUrl(url)
                 .replaceAll("(?i)([:;]password=)[^;]*", "$1****");
+  }
+
+  @Override
+  public String optimizeSelectQuery(String selectQuery) {
+    return selectQuery + " FOR FETCH ONLY";
+  }
+
+  /**
+   * Performs commits on statement reset in order to free DB2 ressources
+   *
+   * @param stmt statement being resetted
+   */
+  @Override
+  public void beforePreparedStatementReset(PreparedStatement stmt) {
+    try {
+      Connection connection = stmt.getConnection();
+      if(!connection.isClosed()) {
+        connection.commit();
+      }
+    } catch (SQLException e) {
+      log.warn("Failed to perform commit before prepared statement reset.", e);
+    }
   }
 }

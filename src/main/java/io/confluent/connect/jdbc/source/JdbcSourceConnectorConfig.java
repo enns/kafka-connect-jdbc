@@ -155,6 +155,21 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
   public static final String MODE_INCREMENTING = "incrementing";
   public static final String MODE_TIMESTAMP_INCREMENTING = "timestamp+incrementing";
 
+  public static final String MODE_BULK_RESUMABLE = "bulk-resumable";
+
+  public static final String BULK_RESUME_QUERY_CONFIG = "bulk.resume.query";
+  public static final String BULK_RESUME_QUERY_DOC = "";
+  public static final String BULK_RESUME_QUERY_DISPLAY = "Resume Query";
+
+  public static final String BULK_OFFSET_COLUMNS_TABLE_CONFIG = "bulk.offset.columns.table";
+  public static final String BULK_OFFSET_COLUMNS_TABLE_DOC = "";
+  public static final String BULK_OFFSET_COLUMNS_TABLE_DISPLAY = "";
+
+  public static final String BULK_OFFSET_COLUMNS_CONFIG = "bulk.offset.columns";
+  public static final String BULK_OFFSET_COLUMNS_DOC = "";
+  public static final String BULK_OFFSET_COLUMNS_DISPLAY = "";
+
+
   public static final String INCREMENTING_COLUMN_NAME_CONFIG = "incrementing.column.name";
   private static final String INCREMENTING_COLUMN_NAME_DOC =
       "The name of the strictly incrementing column to use to detect new rows. Any empty value "
@@ -442,6 +457,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
         ConfigDef.ValidString.in(
             MODE_UNSPECIFIED,
             MODE_BULK,
+            MODE_BULK_RESUMABLE,
             MODE_TIMESTAMP,
             MODE_INCREMENTING,
             MODE_TIMESTAMP_INCREMENTING
@@ -510,7 +526,38 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
         ++orderInGroup,
         Width.MEDIUM,
         QUOTE_SQL_IDENTIFIERS_DISPLAY,
-        QUOTE_METHOD_RECOMMENDER);
+        QUOTE_METHOD_RECOMMENDER)
+      .define(
+              BULK_RESUME_QUERY_CONFIG,
+          Type.STRING,
+          "",
+          Importance.MEDIUM,
+              BULK_RESUME_QUERY_DOC,
+          MODE_GROUP,
+          ++orderInGroup,
+          Width.SHORT,
+              BULK_RESUME_QUERY_DISPLAY
+    ).define(
+          BULK_OFFSET_COLUMNS_CONFIG,
+          Type.STRING,
+          "",
+          Importance.MEDIUM,
+          BULK_OFFSET_COLUMNS_DOC,
+          MODE_GROUP,
+          ++orderInGroup,
+          Width.SHORT,
+          BULK_OFFSET_COLUMNS_DISPLAY
+    ).define(
+            BULK_OFFSET_COLUMNS_TABLE_CONFIG,
+            Type.STRING,
+            "",
+            Importance.MEDIUM,
+            BULK_OFFSET_COLUMNS_TABLE_DOC,
+            MODE_GROUP,
+            ++orderInGroup,
+            Width.SHORT,
+            BULK_OFFSET_COLUMNS_TABLE_DISPLAY
+    );
   }
 
   private static final void addConnectorOptions(ConfigDef config) {
@@ -705,6 +752,10 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
       switch (mode) {
         case MODE_BULK:
           return false;
+        case MODE_BULK_RESUMABLE:
+          return name.equals(BULK_RESUME_QUERY_CONFIG)
+                  || name.equals(BULK_OFFSET_COLUMNS_CONFIG)
+                  || name.equals(BULK_OFFSET_COLUMNS_TABLE_CONFIG);
         case MODE_TIMESTAMP:
           return name.equals(TIMESTAMP_COLUMN_NAME_CONFIG) || name.equals(VALIDATE_NON_NULL_CONFIG);
         case MODE_INCREMENTING:

@@ -115,7 +115,8 @@ public class JdbcSourceTask extends SourceTask {
     Map<Map<String, String>, Map<String, Object>> offsets = null;
     if (mode.equals(JdbcSourceTaskConfig.MODE_INCREMENTING)
         || mode.equals(JdbcSourceTaskConfig.MODE_TIMESTAMP)
-        || mode.equals(JdbcSourceTaskConfig.MODE_TIMESTAMP_INCREMENTING)) {
+        || mode.equals(JdbcSourceTaskConfig.MODE_TIMESTAMP_INCREMENTING)
+            || mode.equals(JdbcSourceTaskConfig.MODE_BULK_RESUMABLE)) {
       List<Map<String, String>> partitions = new ArrayList<>(tables.size());
       switch (queryMode) {
         case TABLE:
@@ -237,6 +238,24 @@ public class JdbcSourceTask extends SourceTask {
                 timestampDelayInterval,
                 timeZone
             )
+        );
+      } else if (mode.endsWith(JdbcSourceTaskConfig.MODE_BULK_RESUMABLE)) {
+        String resumeQuery =
+                config.getString(JdbcSourceTaskConfig.BULK_RESUME_QUERY_CONFIG);
+        String offsetColumnsTableName =
+                config.getString(JdbcSourceTaskConfig.BULK_OFFSET_COLUMNS_TABLE_CONFIG);
+        String offsetColumnNames =
+                config.getString(JdbcSourceTaskConfig.BULK_OFFSET_COLUMNS_CONFIG);
+        tableQueue.add(
+                new ResumableBulkTableQuerier(
+                        dialect,
+                        tableOrQuery,
+                        resumeQuery,
+                        topicPrefix,
+                        offsetColumnsTableName,
+                        offsetColumnNames.split(","),
+                        offset
+                )
         );
       }
     }

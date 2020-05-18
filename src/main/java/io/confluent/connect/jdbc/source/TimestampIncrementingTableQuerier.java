@@ -137,7 +137,7 @@ public class TimestampIncrementingTableQuerier extends TableQuerier implements C
     criteria = dialect.criteriaFor(incrementingColumn, timestampColumns);
     criteria.whereClause(builder);
 
-    String queryString = builder.toString();
+    String queryString = optimizeQuery(builder.toString());
     recordQuery(queryString);
     log.debug("{} prepared SQL query: {}", this, queryString);
     stmt = dialect.createPreparedStatement(db, queryString);
